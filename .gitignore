@@ -1,0 +1,54 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Compiled Headers
+*.gch
+
+# Executables
+*.exe
+*.out
+*.app
+
+
+*.swp
+*.DS_Store
+*.in
+
+# Autotools' files
+m4/*
+aclocal.m4
+autom4te.cache/
+aux-dist/
+compile
+config.guess
+config.log
+config.status
+config.sub
+configure
+depcomp
+missing
+ltmain.sh
+libtool
+install-sh
+stamp-h1
+Makefile
+src/Makefile
+include/Makefile
+
+.deps
+src/raspcorn
+build/
