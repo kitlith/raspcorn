@@ -21,7 +21,11 @@
 #include <unicorn/unicorn.h>
 #endif // _MSC_VER
 
+#include <stdio.h>
+#include <string.h>
+
 #include "uc_debug.h"
+#include "args.h"
 
 #define LOAD_ADDRESS 0x8000
 
@@ -34,12 +38,32 @@ static bool hook_write(uc_engine *emu, uc_mem_type type, uint64_t addr,
 }
 
 int main(int argc, char **argv) {
+    struct prog_options opt;
+    parse_args(argc, argv, &opt);
+
+    FILE *codefile;
+    if (opt.bin_filename && strcmp(opt.bin_filename, "-")) {
+        codefile = stdin;
+    } else if (opt.bin_filename) {
+        codefile = fopen(opt.bin_filename, "rb");
+    } else {
+        exit(-1);
+    }
+
     uc_engine *emu;
-    const char code[] = "\x37\x00\xa0\xe3\x03\x10\x42\xe0"; // mov r0, #0x37; sub r1, r2, r3
 
     errorp(uc_open(UC_ARCH_ARM, UC_MODE_ARM, &emu), "uc_open");
     UC(mem_map,  0, 2*1024*1024, UC_PROT_ALL);
-    UC(mem_write,  LOAD_ADDRESS, code, sizeof(code)-1);
+    puts("Emulator memory mapped..."); //debug
+
+    char c;
+    unsigned int code_size = 0;
+    while ((c = fgetc(codefile)) != EOF) {
+        puts("Read a byte!"); //debug
+        UC(mem_write,  LOAD_ADDRESS + (sizeof(char)*code_size), &c, sizeof(char));
+        ++code_size;
+    }
+    puts("Read file into emulator memory..."); //debug
 
     // Temp for testing.
     int r0 = 0x1234;     // R0 register
@@ -55,7 +79,7 @@ int main(int argc, char **argv) {
     UC(hook_add, &hook, UC_HOOK_MEM_WRITE, (void*)hook_write, NULL, 1, 0);
     // That cast doesn't seem right...
 
-    UC(emu_start, LOAD_ADDRESS, LOAD_ADDRESS+sizeof(code)-1, 0, 0);
+    UC(emu_start, LOAD_ADDRESS, LOAD_ADDRESS + (sizeof(char)*code_size) - 1, 0, 0);
 
     puts("Emulation Finished. CPU Context:");
     print_ctx(emu);

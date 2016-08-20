@@ -11,10 +11,10 @@ void errorp(uc_err error, const char *func_name) {
 
 void print_ctx(uc_engine *emu) {
     int r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, sp, lr, pc;
-    UC(reg_read, UC_ARM_REG_R0, &r0);
-    UC(reg_read, UC_ARM_REG_R1, &r1);
-    UC(reg_read, UC_ARM_REG_R2, &r2);
-    UC(reg_read, UC_ARM_REG_R3, &r3);
+    UC(reg_read, UC_ARM_REG_R0, &r0); // Would like to know if there's an
+    UC(reg_read, UC_ARM_REG_R1, &r1); // easier way to do this.
+    UC(reg_read, UC_ARM_REG_R2, &r2); // Techncally, this isn't even everything.
+    UC(reg_read, UC_ARM_REG_R3, &r3); // Arrrrrgh.
     UC(reg_read, UC_ARM_REG_R4, &r4);
     UC(reg_read, UC_ARM_REG_R5, &r5);
     UC(reg_read, UC_ARM_REG_R6, &r6);
