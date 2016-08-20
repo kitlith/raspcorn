@@ -42,10 +42,14 @@ int main(int argc, char **argv) {
     parse_args(argc, argv, &opt);
 
     FILE *codefile;
-    if (opt.bin_filename && strcmp(opt.bin_filename, "-")) {
+    if (opt.bin_filename && !strcmp(opt.bin_filename, "-")) {
         codefile = stdin;
     } else if (opt.bin_filename) {
         codefile = fopen(opt.bin_filename, "rb");
+        if (codefile == NULL) {
+            puts("The file does not appear to exist!");
+            exit(-1);
+        }
     } else {
         exit(-1);
     }
@@ -54,16 +58,13 @@ int main(int argc, char **argv) {
 
     errorp(uc_open(UC_ARCH_ARM, UC_MODE_ARM, &emu), "uc_open");
     UC(mem_map,  0, 2*1024*1024, UC_PROT_ALL);
-    puts("Emulator memory mapped..."); //debug
 
     char c;
     unsigned int code_size = 0;
     while ((c = fgetc(codefile)) != EOF) {
-        puts("Read a byte!"); //debug
         UC(mem_write,  LOAD_ADDRESS + (sizeof(char)*code_size), &c, sizeof(char));
         ++code_size;
     }
-    puts("Read file into emulator memory..."); //debug
 
     // Temp for testing.
     int r0 = 0x1234;     // R0 register
