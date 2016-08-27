@@ -23,18 +23,22 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <signal.h>
 
 #include "uc_debug.h"
 #include "args.h"
+#include "peripheral.h"
 
-#define LOAD_ADDRESS 0x8000
+#define LOAD_ADDRESS 0x8000 // TODO: Program argument?
 
 #define UC_ENGINE_VAR emu
 
-static bool hook_write(uc_engine *emu, uc_mem_type type, uint64_t addr,
-                        uint32_t size, int64_t value, void* nothing) {
-    printf(">>> Tracing write at 0x%" PRIx64 ", size = 0x%x\n", addr, size);
-    return true;
+uc_engine *tmp; // Need a better way to do this!
+
+void sigINT(int whocares) {
+    puts("\nCPU Context:");
+    print_ctx(tmp);
+    exit(0);
 }
 
 int main(int argc, char **argv) {
@@ -54,33 +58,30 @@ int main(int argc, char **argv) {
         exit(-1);
     }
 
+    puts("\x28\x20\xcd\xa1\xc2\xb0\xcd\x9c\xca\x96\xcd\xa1\xc2\xb0\x29"); // ( ͡°͜ʖ͡°)
+
     uc_engine *emu;
 
-    errorp(uc_open(UC_ARCH_ARM, UC_MODE_ARM, &emu), "uc_open");
-    UC(mem_map,  0, 2*1024*1024, UC_PROT_ALL);
+    errorp(uc_open(UC_ARCH_ARM, UC_MODE_ARM, &emu), __LINE__, __FILE__, "uc_open", emu);
+    UC(mem_map, 0, 2*1024*1024, UC_PROT_ALL);
+    tmp = emu;
+    signal(SIGINT, sigINT);
 
-    char c;
+    char c = fgetc(codefile);
     unsigned int code_size = 0;
-    while ((c = fgetc(codefile)) != EOF) {
+    while (!feof(codefile)) {
         UC(mem_write,  LOAD_ADDRESS + (sizeof(char)*code_size), &c, sizeof(char));
         ++code_size;
+        c = fgetc(codefile);
     }
 
-    // Temp for testing.
-    int r0 = 0x1234;     // R0 register
-    int r2 = 0x6789;     // R1 register
-    int r3 = 0x3333;     // R2 register
-
-    UC(reg_write, UC_ARM_REG_R0, &r0);
-    UC(reg_write, UC_ARM_REG_R2, &r2);
-    UC(reg_write, UC_ARM_REG_R3, &r3);
-    // End temp
+    peripheral_init(emu);
 
     uc_hook hook;
-    UC(hook_add, &hook, UC_HOOK_MEM_WRITE, (void*)hook_write, NULL, 1, 0);
+    UC(hook_add, &hook, UC_HOOK_MEM_INVALID, (void*)hook_mem_invalid, NULL, 1, 0);
     // That cast doesn't seem right...
 
-    UC(emu_start, LOAD_ADDRESS, LOAD_ADDRESS + (sizeof(char)*code_size) - 1, 0, 0);
+    UC(emu_start, LOAD_ADDRESS, LOAD_ADDRESS + (sizeof(char)*code_size), 0, 0);
 
     puts("Emulation Finished. CPU Context:");
     print_ctx(emu);
