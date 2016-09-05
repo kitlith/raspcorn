@@ -10,9 +10,9 @@ static struct option longopts[] = {
 };
 
 void parse_args(int argc, char **argv, struct prog_options *opt) {
-    memset(opt, 0, sizeof(*opt));
+    // memset(opt, 0, sizeof(*opt));
     char c;
-    while ((c = getopt_long(argc, argv, "lp", longopts, 0)) != -1) {
+    while ((c = getopt_long(argc, argv, "l:p:", longopts, 0)) != -1) {
         switch(c) {
             case 'l':
                 if (optarg != NULL) {

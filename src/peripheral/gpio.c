@@ -21,11 +21,16 @@ static void gpio_callback(uc_engine *emu, uc_mem_type type, uint64_t addr,
     if ((type == UC_MEM_READ) || (type == UC_MEM_FETCH)) {
         switch (addr) {
             case GPLEV0:
-                *value = testCmds[testPos++] << 2;
+                if (testPos < sizeof(testCmds)) {
+                    printf("CMDByte: 0x%02x\n", testCmds[testPos]);
+                    *value = testCmds[testPos++] << 2;
+                    dataPos = 0;
+                }
                 break;
             case GPEDS0:
-                *value = (1 << 10) | ((dataPos++ >= 0x200) << 11);
-                if (dataPos > 0x200) dataPos = 0;
+                // puts("Checked pin status!");
+                *value = (1 << 10) | ((dataPos >= 0x20) << 11);
+                if (dataPos > 0x20) dataPos = 0;
                 break;
         }
         // *value = 0;
@@ -42,6 +47,7 @@ static void gpio_callback(uc_engine *emu, uc_mem_type type, uint64_t addr,
             //     break;
             case GPSET0:
                 printf("0x%02x\n", (unsigned char)(*value >> 2));
+                ++dataPos;
                 break;
             case GPCLR0:
                 // if (*value & (1<<16)) {
@@ -49,8 +55,8 @@ static void gpio_callback(uc_engine *emu, uc_mem_type type, uint64_t addr,
                 // }
                 break;
             default:
-                printf(">>> GPIO Write at 0x%" PRIx64 ", size = 0x%x, value = 0x%lx\n",
-                        GPIO_BASE + addr, size, *value);
+                // printf(">>> GPIO Write at 0x%" PRIx64 ", size = 0x%x, value = 0x%lx\n",
+                //         GPIO_BASE + addr, size, *value);
                 break;
         }
     }

@@ -78,8 +78,9 @@ int main(int argc, char **argv) {
 
     peripheral_init(emu, opt.peripheral_base);
 
-    uc_hook hook;
-    UC(hook_add, &hook, UC_HOOK_MEM_INVALID, (void*)hook_mem_invalid, NULL, 1, 0);
+    uc_hook invalid, read;
+    UC(hook_add, &invalid, UC_HOOK_MEM_INVALID, (void*)hook_mem_invalid, NULL, 1, 0);
+    // UC(hook_add, &read, UC_HOOK_MEM_READ, (void*)hook_mem_read, NULL, 1, 0);
     // That cast doesn't seem right...
 
     UC(emu_start, opt.load_addr, opt.load_addr + (sizeof(char)*code_size), 0, 0);

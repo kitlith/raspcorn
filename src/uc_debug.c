@@ -63,3 +63,7 @@ bool hook_mem_invalid(uc_engine *uc, uc_mem_type type, uint64_t addr, int size,
             return false;
     }
 }
+
+void hook_mem_read(uc_engine *uc, uc_mem_type type, uint64_t address, int size, int64_t value, void *n) {
+    printf(">>> Read 0x%08lx from 0x%08lx.\n", value, address);
+}
