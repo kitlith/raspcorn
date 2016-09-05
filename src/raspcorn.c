@@ -29,8 +29,6 @@
 #include "args.h"
 #include "peripheral.h"
 
-#define LOAD_ADDRESS 0x8000 // TODO: Program argument?
-
 #define UC_ENGINE_VAR emu
 
 uc_engine *tmp; // Need a better way to do this!
@@ -42,7 +40,10 @@ void sigINT(int whocares) {
 }
 
 int main(int argc, char **argv) {
-    struct prog_options opt;
+    struct prog_options opt = {
+        .load_addr = 0x8000,
+        .peripheral_base = 0x20000000
+    };
     parse_args(argc, argv, &opt);
 
     FILE *codefile;
@@ -70,18 +71,18 @@ int main(int argc, char **argv) {
     char c = fgetc(codefile);
     unsigned int code_size = 0;
     while (!feof(codefile)) {
-        UC(mem_write,  LOAD_ADDRESS + (sizeof(char)*code_size), &c, sizeof(char));
+        UC(mem_write, opt.load_addr + (sizeof(char)*code_size), &c, sizeof(char));
         ++code_size;
         c = fgetc(codefile);
     }
 
-    peripheral_init(emu);
+    peripheral_init(emu, opt.peripheral_base);
 
     uc_hook hook;
     UC(hook_add, &hook, UC_HOOK_MEM_INVALID, (void*)hook_mem_invalid, NULL, 1, 0);
     // That cast doesn't seem right...
 
-    UC(emu_start, LOAD_ADDRESS, LOAD_ADDRESS + (sizeof(char)*code_size), 0, 0);
+    UC(emu_start, opt.load_addr, opt.load_addr + (sizeof(char)*code_size), 0, 0);
 
     puts("Emulation Finished. CPU Context:");
     print_ctx(emu);

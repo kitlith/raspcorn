@@ -44,10 +44,13 @@ bool hook_mem_invalid(uc_engine *uc, uc_mem_type type, uint64_t addr, int size,
             printf(">>> UC_HOOK_MEM_INVALID type: %d at 0x%" PRIx64 "\n", type, addr);
             return false;
         case UC_MEM_READ_UNMAPPED:
-            printf(">>> Read from invalid memory at 0x%" PRIx64 ", Size = %u\n", addr, size);
+            printf(">>> Read from unmapped memory at 0x%" PRIx64 ", Size = %u\n", addr, size);
             return false;
         case UC_MEM_WRITE_UNMAPPED:
-            printf(">>> Write to invalid memory at 0x%" PRIx64 ", Size = %u, Value = 0x%" PRIx64 "\n", addr, size, value);
+            printf(">>> Write to unmapped memory at 0x%" PRIx64 ", Size = %u, Value = 0x%" PRIx64 "\n", addr, size, value);
+            return false;
+        case UC_MEM_FETCH_UNMAPPED:
+            printf(">>> Fetch from unmapped memory at 0x%" PRIx64 "\n", addr);
             return false;
         case UC_MEM_FETCH_PROT:
             printf(">>> Fetch from non-executable memory at 0x%" PRIx64 "\n", addr);

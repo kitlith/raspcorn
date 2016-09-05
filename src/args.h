@@ -4,8 +4,11 @@
 #define RASPCORN_ARGS
 
 #include <getopt.h>
+#include <stdint.h>
 
 struct prog_options {
+    uint64_t load_addr;
+    uint64_t peripheral_base;
     char **extra_args;
     unsigned int extra_argc;
     char *bin_filename;

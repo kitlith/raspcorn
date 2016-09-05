@@ -5,8 +5,6 @@
 
 #include <unicorn/unicorn.h>
 
-#define PERIPHERAL_BASE 0x20000000 // TODO: Program Argument?
-
-int peripheral_init(uc_engine *emu);
+int peripheral_init(uc_engine *emu, uint64_t peripheral_base);
 
 #endif /* end of include guard: RASPCORN_PERIPHERAL */
